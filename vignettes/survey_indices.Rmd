@@ -1,0 +1,247 @@
+---
+title: "Calculation of survey indices in R"
+author: "Einar Hjörleifsson"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    fig_height: 6.5
+    fig_width: 9.5
+---
+
+# Preamble
+
+The primary objective of this document to compare a script based on the functions (verbs) in the `dplyr` package that produce equivalent survey indices as are currently are obtained via combination of shell scripts and R-scripts.
+
+# Setup
+
+```{r, message = FALSE}
+library(smx)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+Some constants:
+```{r}
+std.towlength <- 4             # seamiles
+std.towwidth  <- 17            # meters
+std.area      <- 4 * 17/1852   # standard area swept square nautical miles
+std.cv <- 1                    # for setting the cv as the mean if number of tows in a
+                               #  strata is one
+```
+
+# Get in some data
+
+For now we will use:
+
+```{r}
+Station <- read.csv("http://www.hafro.is/~einarhj/data/tcrenv2016/Station.csv") %>%
+  mutate(year = lubridate::year(date1),
+         towlength = trim_towlength(towlength)) %>% 
+  select(id, year, towlength, strata) %>% 
+  arrange(id)
+Length      <- read.csv("http://www.hafro.is/~einarhj/data/tcrenv2016/Length.csv")
+Subsampling <- read.csv("http://www.hafro.is/~einarhj/data/tcrenv2016/Subsampling.csv")
+Stratas     <- read.csv("http://www.hafro.is/~einarhj/data/tcrenv2016/Stratas.csv") %>% 
+  select(strata, area = rall.area)
+```
+
+# The calculation
+
+Specify species:
+```{r}
+SPECIES <- 1                   # Cod
+```
+
+__Filter the measurement data for the species in question__
+
+Get the raising factor:
+```{r}
+ss <-
+  Subsampling %>% 
+  filter(species %in% SPECIES) %>%
+  mutate(r = n.total/n.measured) %>% 
+  select(id, r)
+```
+
+Get the length measurements and do the rasing:
+```{r}
+le <- 
+  Length %>% 
+  filter(species == SPECIES) %>%
+  # a double precaution, in case length bins by sex
+  group_by(id, length) %>%
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+  left_join(ss, by="id") %>%
+  mutate(n = n * r / 1e3) %>%     # units of thousands
+  select(-r)
+```
+
+Note: We could now use the inbuild `calc_indices` function in `smx`. I.e. (not run):
+```{r, eval = FALSE}
+calc_indices(st = Station, le = le, stratas = Stratas)
+```
+
+What follows shows calculation equivalent to that done in the `calc_indices` function, demonstrating that only `dplyr` verbs are used.
+
+Because we are calculating the abundance less than and biomass greater than we first generate a data.frame of all combination of synis.id (tow stations) and length classes:
+
+```{r}
+base <- 
+  as_data_frame(expand.grid(length = c(5:140), id = Station$id)) %>% 
+  left_join(Station, by = "id") %>%
+  left_join(le, by=c("id","length")) %>% 
+  arrange(id, length) %>% 
+  group_by(id) %>% # The grouping here is for the cumsum calculation
+  mutate(n  = ifelse(is.na(n),0,n)  * std.towlength / towlength, # standardized to per 4 miles
+         cn = cumsum(n),
+         b  = n * 0.01 * length^3/1e3,
+         cb = sum(b) - cumsum(b) + b) %>%
+  group_by(year, strata, length) %>%
+  summarise(N  = n(),
+            n_m  = mean(n),
+            n_d  = ifelse(N == 1, n_m  * std.cv, sd(n)),
+            cn_m = mean(cn),
+            cn_d = ifelse(N == 1, cn_m * std.cv, sd(cn)),
+            b_m  = mean(b),
+            b_d  = ifelse(N == 1, b_m  * std.cv, sd(b)),
+            cb_m = mean(cb),
+            cb_d = ifelse(N == 1, cb_m * std.cv, sd(cb))) %>% 
+  ungroup() %>% 
+  left_join(Stratas, by = "strata") %>%
+  mutate(area  = area/1.852^2 / std.area,
+         n     = n_m  * area,
+         cn    = cn_m * area,
+         b     = b_m  * area,
+         cb    = cb_m * area)
+```
+
+```{r}
+aggr <- 
+  base %>% 
+  group_by(year, length) %>% 
+  # A la Höski:
+  summarise(n = sum(n),
+            n.cv = smx:::calc_cv(n_m,n_d,area,N),
+            b = sum(b),
+            b.cv = smx:::calc_cv(b_m,b_d,area,N),
+            cn = sum(cn),
+            cn.cv = smx:::calc_cv(cn_m, cn_d, area, N),
+            cb = sum(cb),
+            cb.cv = smx:::calc_cv(cb_m, cb_d, area, N))
+```
+
+# Plot results and compare with the "truth"
+
+```{r, message = FALSE, warning = FALSE}
+attach('/net/hafkaldi/export/u2/reikn/Splus5/SMB/TORSKUR/.RData')
+```
+
+```{r, warning = FALSE}
+ggplot() +
+  geom_pointrange(data = aggr %>% filter(length == min(length)),
+                  aes(year, cb, 
+                      ymin = cb * (1 - cb.cv), 
+                      ymax = cb * (1 + cb.cv)),
+                  col = "green",
+                  lwd = 1,
+                  size = 4) +
+  geom_pointrange(data = aggr.visit %>% filter(svaedi == "Heild", lengd == min(lengd)),
+                  aes(ar, bio.staerri, 
+                      ymin = bio.staerri * (1 - cv.bio.staerri),
+                      ymax = bio.staerri * (1 + cv.bio.staerri)),
+                  colour = "red") +
+  labs(x = NULL, y = NULL, title = "Standardized biomass index")
+```
+
+```{r, warning = FALSE}
+ggplot() +
+  geom_pointrange(data = aggr %>% filter(length == max(length)),
+                  aes(year, cn, 
+                      ymin = cn * (1 - cn.cv), 
+                      ymax = cn * (1 + cn.cv)),
+                  col = "green",
+                  lwd = 1,
+                  size = 4) +
+  geom_pointrange(data = aggr.visit %>% filter(svaedi == "Heild", lengd == max(lengd)),
+                  aes(ar, fj.minni, 
+                      ymin = fj.minni * (1 - cv.fj.minni),
+                      ymax = fj.minni * (1 + cv.fj.minni)),
+                  col = "red") +
+  labs(x = NULL, y = NULL, title = "Standardized abundance index")
+```
+
+Crude check of the base calculations:
+
+```{r, warning = FALSE}
+theme_stripped <- function (base_size = 12, base_family = "") 
+{
+  theme_minimal(base_size = base_size, base_family = base_family) %+replace% 
+    theme(#axis.text = ggplot2::element_blank(),
+          axis.title = ggplot2::element_blank(),
+          panel.grid.minor = ggplot2::element_blank(),
+          panel.grid.major = ggplot2::element_blank(),
+          panel.margin = grid::unit(0, "lines"))
+}
+
+
+year <- 2013
+i <- base.visit$ar == year
+
+d <- base %>% filter(year == 2013)
+
+# Abundance
+ggplot() + geom_line(data=d,aes(length,n),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,fj),col="red") +
+  labs(x = NULL, y = NULL, title = "Abundance") +
+  theme_stripped()
+
+# Biomass
+ggplot() + geom_line(data=d,aes(length,b),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,bio),col="red") +
+  labs(x = NULL, y = NULL, title = "Biomass") +
+  theme_stripped()
+
+# Cumabundance
+ggplot() + geom_line(data=d,aes(length,cn),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,fj.minni),col="red") +
+  labs(x = NULL, y = NULL, title = "Cumulative abundance") +
+  theme_stripped()
+
+# Cumbiomass
+ggplot() + geom_line(data=d,aes(length,cb),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,bio.staerri),col="red")  +
+  labs(x = NULL, y = NULL, title = "Cumulative biomass") +
+  theme_stripped()
+
+# CV abundance
+ggplot() + geom_line(data=d,aes(length,n_d/sqrt(N)/n_m),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,cv.fj),col="red") +
+  labs(x = NULL, y = NULL, title = "CV abundance") +
+  theme_stripped()
+
+# CV cumulative abundance
+ggplot() + geom_line(data=d,aes(length,cn_d/sqrt(N)/cn_m),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,cv.fj.minni),col="red") +
+  labs(x = NULL, y = NULL, title = "Cumulative cv abundance") +
+  theme_stripped()
+
+# CV cumulative biomass
+ggplot() + geom_line(data=d,aes(length,cb_d/sqrt(N)/cb_m),lwd=1,col="green") +
+  facet_wrap(~ strata,scale="free_y") +
+  geom_line(data=base.visit[i,],aes(lengd,cv.bio.staerri),col="red") +
+  labs(x = NULL, y = NULL, title = "Cumulative cv biomass") +
+  theme_stripped()
+```
+
+```{r}
+devtools::session_info()
+```
+  
