@@ -4,13 +4,15 @@
 \alias{calc_indices}
 \title{XXX}
 \usage{
-calc_indices(st, le, stratas, std.towlength = 4, std.cv = 1, std.area = 4
-  * 17/1852)
+calc_indices(st, le, lwcoeff = c(0.01, 3), stratas, std.towlength = 4,
+  std.cv = 1, std.area = 4 * 17/1852)
 }
 \arguments{
 \item{st}{A dataframe containing columns id, year, towlength and strata}
 
 \item{le}{A dataframe containing columns id, length and n where the latter are the "raised" numbers}
+
+\item{lwcoeff}{A vector containing the length weight coefficients a and b.}
 
 \item{stratas, }{A dataframe containing columns strata and area.}
 

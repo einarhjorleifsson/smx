@@ -6,6 +6,7 @@
 #'
 #' @param st A dataframe containing columns id, year, towlength and strata
 #' @param le A dataframe containing columns id, length and n where the latter are the "raised" numbers
+#' @param lwcoeff A vector containing the length weight coefficients a and b.
 #' @param stratas, A dataframe containing columns strata and area.
 #' @param std.towlength Tow length in nautical miles
 #' @param std.cv Default is 1.
@@ -13,6 +14,7 @@
 #'
 calc_indices <- function(st,
                          le,
+                         lwcoeff = c(0.01, 3),
                          stratas,
                          std.towlength = 4,
                          std.cv = 1,
@@ -33,7 +35,7 @@ calc_indices <- function(st,
     dplyr::group_by(id) %>%
     dplyr::mutate(n  = ifelse(is.na(n),0,n)  * std.towlength / towlength, # standardized to per 4 miles
            cn = cumsum(n),
-           b  = n * 0.01 * length^3/1e3,
+           b  = n * lwcoeff[1] * length^lwcoeff[2]/1e3,
            cb = sum(b) - cumsum(b) + b) %>%
     dplyr::group_by(year, strata, length) %>%
     dplyr::summarise(N  = n(),
