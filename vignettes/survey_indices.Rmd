@@ -83,6 +83,8 @@ Note: We could now use the inbuild `calc_indices` function in `smx`. I.e. (not r
 calc_indices(st = Station, le = le, stratas = Stratas)
 ```
 
+This will return a list of length 2 with two dataframes that should be familiar with those that have used the old environment: `base` and `aggr`.
+
 What follows shows calculation equivalent to that done in the `calc_indices` function, demonstrating that only `dplyr` verbs are used.
 
 Because we are calculating the abundance less than and biomass greater than we first generate a data.frame of all combination of synis.id (tow stations) and length classes:
