@@ -1,3 +1,10 @@
+#' @name dictionary
+#' @title Some title
+#' @description Icelandic and english variable names
+#' @docType data
+#' @format dataframe
+NULL
+
 #' @name LENGDIR
 #' @title Some title
 #' @description from SMB RData
