@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 
-inst
 *.html
 inst/doc
+inst/csv
+inst/populate
