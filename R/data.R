@@ -1,3 +1,10 @@
+#' @name smbSTODVAR
+#' @title Some title
+#' @description Spring groundfish survey stations 1985 to 2015
+#' @docType data
+#' @format dataframe
+NULL
+
 #' @name dictionary
 #' @title Some title
 #' @description Icelandic and english variable names
