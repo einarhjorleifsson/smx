@@ -5,7 +5,7 @@
 \title{Title}
 \usage{
 read_stations(year = NULL, month = NULL, cruise.id = NULL,
-  gear.id = NULL, rect = NULL, id = NULL, oracle = TRUE)
+  gear.id = NULL, rect = NULL, id = NULL, col.names, oracle = TRUE)
 }
 \arguments{
 \item{oracle}{}

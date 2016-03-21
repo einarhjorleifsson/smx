@@ -6,6 +6,7 @@
 #' @param gear.id
 #' @param rect
 #' @param id
+#' @param col.names
 #' @param oracle
 #'
 #' @return
@@ -18,16 +19,17 @@ read_stations <- function(year = NULL,
                           gear.id = NULL,
                           rect = NULL,
                           id = NULL,
-                          #col.names = stodvar.col,
+                          col.names,
                           oracle = TRUE) {
 
   d <- fjolst::lesa.stodvar(ar = year, man = month, leidangur = cruise.id,
                            veidarfaeri = gear.id,
                            reitur = rect,
                            synis.id = id,
+                           col.names = col.names,
                            oracle = oracle) %>%
-    tbl_df() %>%
-    rename_(.dots=setNames(names(.),dictionary$eng[match(names(.),dictionary$ice)]))
+    dplyr::tbl_df() %>%
+    dplyr::rename_(.dots=setNames(names(.),dictionary$eng[match(names(.),dictionary$ice)]))
 
   return(d)
 }
@@ -57,9 +59,10 @@ read_lengths <- function(id, species, col.names = c("id","length","n"),
                             kynthroski = mat,
                             lengd = length,
                             leidrett = corrected,
+                            col.names = c("synis.id", "tegund", "lengd", "fjoldi"),
                             oracle = oracle) %>%
-    tbl_df() %>%
-    rename_(.dots=setNames(names(.),dictionary$eng[match(names(.),dictionary$ice)]))
+    dplyr::tbl_df() %>%
+    dplyr::rename_(.dots=setNames(names(.),dictionary$eng[match(names(.),dictionary$ice)]))
 
   return(d)
 }
@@ -80,13 +83,15 @@ read_lengths <- function(id, species, col.names = c("id","length","n"),
 read_subsampling <- function(id, species, weight = FALSE,
                              corrected = FALSE,
                              oracle = TRUE) {
- d <- fjolst::lesa.numer(id, teg = species, vigt = weight,
+ d <- fjolst::lesa.numer(id, teg = species,
+                         vigt = weight,
+                         col.names =c("synis.id", "tegund", "fj.maelt", "fj.talid"),
                          leidrett = corrected,
                          oracle = oracle) %>%
-   tbl_df() %>%
-   rename_(.dots=setNames(names(.),dictionary$eng[match(names(.),dictionary$ice)])) %>%
-   mutate(r = 1 + n.counted/n.measured) %>%
-   select(-n.counted, -n.measured)
+   dplyr::tbl_df() %>%
+   dplyr::rename_(.dots=setNames(names(.),dictionary$eng[match(names(.),dictionary$ice)])) %>%
+   dplyr::mutate(r = 1 + n.counted/n.measured) %>%
+   dplyr::select(-n.counted, -n.measured)
 
  return(d)
 

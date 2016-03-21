@@ -24,11 +24,11 @@
 #' @export
 #'
 calc_by_station <- function(st,
-                         le,
-                         lwcoeff = c(0.01, 3),
-                         std = c("none", "towlength", "areaswept"),
-                         std.towlength = 4,
-                         std.towwidth = 17) {
+                            le,
+                            lwcoeff = c(0.01, 3),
+                            std = c("none", "towlength", "areaswept"),
+                            std.towlength = 4,
+                            std.towwidth = 17) {
 
   # ----------------------------------------------------------------------------
   # Standardize to what:
@@ -145,41 +145,42 @@ calc_indices <- function(st,
     dplyr::left_join(le, by=c("id","length")) %>%
     dplyr::arrange(id, length) %>%
     dplyr::group_by(id) %>%
-    dplyr::mutate(n  = ifelse(is.na(n),0,n)  * std.towlength / towlength, # standardized to per 4 miles
-           cn = cumsum(n),
-           b  = n * lwcoeff[1] * length^lwcoeff[2]/1e3,
-           cb = sum(b) - cumsum(b) + b) %>%
+    dplyr::mutate(towlength = ifelse(is.na(towlength), 4, towlength),
+                  n  = ifelse(is.na(n),0,n)  * std.towlength / towlength, # standardized to per 4 miles
+                  cn = cumsum(n),
+                  b  = n * lwcoeff[1] * length^lwcoeff[2]/1e3,
+                  cb = sum(b) - cumsum(b) + b) %>%
     dplyr::ungroup() %>%
     dplyr::group_by(year, strata, length) %>%
     dplyr::summarise(N  = n(),
-              n_m  = mean(n),
-              n_d  = ifelse(N == 1, n_m  * std.cv, sd(n)),
-              cn_m = mean(cn),
-              cn_d = ifelse(N == 1, cn_m * std.cv, sd(cn)),
-              b_m  = mean(b),
-              b_d  = ifelse(N == 1, b_m  * std.cv, sd(b)),
-              cb_m = mean(cb),
-              cb_d = ifelse(N == 1, cb_m * std.cv, sd(cb))) %>%
+                     n_m  = mean(n),
+                     n_d  = ifelse(N == 1, n_m  * std.cv, sd(n)),
+                     cn_m = mean(cn),
+                     cn_d = ifelse(N == 1, cn_m * std.cv, sd(cn)),
+                     b_m  = mean(b),
+                     b_d  = ifelse(N == 1, b_m  * std.cv, sd(b)),
+                     cb_m = mean(cb),
+                     cb_d = ifelse(N == 1, cb_m * std.cv, sd(cb))) %>%
     dplyr::ungroup() %>%
     dplyr::left_join(stratas %>% dplyr::select(strata, area = area), by = "strata") %>%
     dplyr::mutate(area  = area/1.852^2 / std.area,
-           n     = n_m  * area,
-           cn    = cn_m * area,
-           b     = b_m  * area,
-           cb    = cb_m * area)
+                  n     = n_m  * area,
+                  cn    = cn_m * area,
+                  b     = b_m  * area,
+                  cb    = cb_m * area)
 
   aggr <-
     base %>%
     dplyr::group_by(year, length) %>%
     # A la Höski:
     dplyr::summarise(n = sum(n),
-              n.cv = calc_cv(n_m,n_d,area,N),
-              b = sum(b),
-              b.cv = calc_cv(b_m,b_d,area,N),
-              cn = sum(cn),
-              cn.cv = calc_cv(cn_m, cn_d, area, N),
-              cb = sum(cb),
-              cb.cv = calc_cv(cb_m, cb_d, area, N))
+                     n.cv = calc_cv(n_m,n_d,area,N),
+                     b = sum(b),
+                     b.cv = calc_cv(b_m,b_d,area,N),
+                     cn = sum(cn),
+                     cn.cv = calc_cv(cn_m, cn_d, area, N),
+                     cb = sum(cb),
+                     cb.cv = calc_cv(cb_m, cb_d, area, N))
 
   return(list(base = base, aggr = aggr))
 
