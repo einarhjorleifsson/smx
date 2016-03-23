@@ -1,18 +1,18 @@
-#' Title
+#' Read from table fiskar.stodvar or fjolst::stodvar
 #'
-#' @param year
-#' @param month
-#' @param cruise.id
-#' @param gear.id
-#' @param rect
-#' @param id
-#' @param col.names
-#' @param oracle
+#' @param year Years to include
+#' @param month Months to include
+#' @param cruise.id Cruises to include
+#' @param gear.id Gear to include
+#' @param rect Statistical rectangle to include
+#' @param id Station id (synis.id) to include
+#' @param col.names Column names to return
+#' @param oracle Boolean, if TRUE (default) obtains data from database,
+#' otherwise from the binary data in fjolst.
 #'
-#' @return
+#' @return A dataframe
 #' @export
 #'
-#' @examples
 read_stations <- function(year = NULL,
                           month = NULL,
                           cruise.id = NULL,
@@ -46,15 +46,14 @@ read_stations <- function(year = NULL,
 #' @param corrected
 #' @param oracle
 #'
-#' @return
+#' @return A dataframe
 #' @export
 #'
-#' @examples
 read_lengths <- function(id, species, col.names = c("id","length","n"),
                          sex = NULL, mat = NULL, length = NULL,
                          corrected = F, oracle = TRUE) {
 
-  d <- fjolst::lesa.lengdir(id, teg = species, #note col.names just default
+  d <- fjolst::lesa.lengdir(id, teg = species,
                             kyn = sex,
                             kynthroski = mat,
                             lengd = length,

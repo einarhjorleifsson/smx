@@ -18,7 +18,7 @@ tidy_station <- function(hh, to.lower = TRUE) {
   # unique station id
   hh <-
     hh %>%
-    tbl_df() %>%
+    dplyr::tbl_df() %>%
     #dplyr::mutate(id = paste(year, quarter, country, ship, gear, stno, haulno,sep="-"))
     #  this seems to be sufficient
     dplyr::mutate(id = paste(year, quarter, ship, gear, haulno, sep = "-"))
@@ -32,7 +32,7 @@ tidy_station <- function(hh, to.lower = TRUE) {
                   timeshot = paste0(substr(timeshot,1,2),":",substr(timeshot,3,4)),
                   date = lubridate::ymd_hm(paste(year,month,day,timeshot)),
                   datehaul = date + 60 * hauldur) %>%
-    select(-month, -day, -timeshot)
+    dplyr::select(-month, -day, -timeshot)
 
   # needs work:
   # if(!to.lower) hh <- setNames(hh, c(old.names,"id","date","datehaul"))

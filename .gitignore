@@ -6,3 +6,5 @@
 inst/doc
 inst/csv
 inst/populate
+data-raw
+R-potentials

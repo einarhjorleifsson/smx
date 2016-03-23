@@ -7,11 +7,16 @@ Depends:
     R (>= 3.2.3)
 Imports:
     dplyr (>= 0.4.3),
+    gisland,
+    lubridate,
     magrittr,
+    stringr,
     xml2
 License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
-Suggests: knitr,
+Suggests:
+    fjolst,
+    knitr,
     rmarkdown
 VignetteBuilder: knitr

@@ -3,9 +3,13 @@
 \docType{data}
 \name{smbSTODVAR}
 \alias{smbSTODVAR}
-\title{Some title}
+\title{Synis.id and strata of the spring groundfish survey (SMB)}
 \format{dataframe}
 \description{
-Spring groundfish survey stations 1985 to 2015
+Contains only the strata for each tow, both the new and the
+old stratas. The old strata is obtained from the column newstrata in
+STODVAR located at
+/net/hafkaldi/export/u2/reikn/Splus5/SMB/.RData. The newstrata is from
+column newstrata in STODVAR located at /net/hafkaldi/export/u2/reikn/Splus5/SMBNewstrata/.RData
 }
 

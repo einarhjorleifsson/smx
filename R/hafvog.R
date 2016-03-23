@@ -24,7 +24,7 @@ read_hafvog <- function(xmlfile) {
     ot <- read_hafvog_individuals(xmlfile[i])
     if(nrow(ot) > 0) ot$stod_nr <- st$stod_nr
     ss <- read_hafvog_counts(xmlfile[i])
-    if(nrow(ss) > 0) ss$stod_nr <- st$stod_nr
+    if(!is.null(ss)) ss$stod_nr <- st$stod_nr
 
     if(i == 1) {
       res$st <- st
@@ -35,7 +35,7 @@ read_hafvog <- function(xmlfile) {
       res$st                  <- dplyr::bind_rows(res$st, st)
       if(nrow(le) > 0) res$le <- dplyr::bind_rows(res$le, le)
       if(nrow(ot) > 0) res$ot <- dplyr::bind_rows(res$ot, ot)
-      if(nrow(ss) > 0) res$ss <- dplyr::bind_rows(res$ss, ss)
+      if(!is.null(ss)) res$ss <- dplyr::bind_rows(res$ss, ss)
     }
   }
 
@@ -106,13 +106,44 @@ read_hafvog_lengths <- function(xmlfile) {
     xml2::xml_find_all('SKRANING') %>%
     xml2::xml_find_all('MAELIADGERD')
 
-  le <- x[[1]]
-  d <- dplyr::data_frame(rnr = le %>% xml2::xml_find_all(xpath = ".//RADNR") %>% xml2::xml_text() %>% as.integer(),
-                          species = le %>% xml2::xml_children() %>% xml2::xml_find_all(xpath = ".//TEGUND") %>% xml2::xml_text() %>% as.integer(),
-                          nr = le %>% xml2::xml_find_all(xpath = ".//NR") %>% xml2::xml_text() %>% as.integer(),
-                          length = le %>% xml2::xml_find_all(xpath = ".//LENGD") %>% xml2::xml_text() %>% as.integer(),
-                          n = le %>% xml2::xml_find_all(xpath = ".//FJOLDI") %>% xml2::xml_text() %>% as.integer()) %>%
-    dplyr::arrange(species, nr, rnr)
+  x2 <-
+    x[[1]] %>%
+    xml2::xml_children()  %>%
+    xml2::as_list()
+
+  for (k in 1:length(x2)) {
+    cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
+    x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
+    names(x2[[k]]) <- cn
+  }
+
+  d <- do.call(rbind, lapply(lapply(x2, unlist), "[",
+                             unique(unlist(c(sapply(x2,names))))))
+  d <- as.data.frame(d, stringsAsFactors = FALSE)
+  names(d) <- unique(unlist(c(sapply(x2,names))))
+
+  # kyngreind lengdarmaeling
+  x2 <-
+    x[[2]] %>%
+    xml2::xml_children()  %>%
+    xml2::as_list()
+
+  if(length(x2) > 0) {
+    for (k in 1:length(x2)) {
+      cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
+      x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
+      names(x2[[k]]) <- cn
+    }
+
+    d2 <- do.call(rbind, lapply(lapply(x2, unlist), "[",
+                               unique(unlist(c(sapply(x2,names))))))
+    d2 <- as.data.frame(d2, stringsAsFactors = FALSE)
+    names(d2) <- unique(unlist(c(sapply(x2,names))))
+
+    d <- dplyr::bind_rows(d, d2)
+  }
+
+
 
   tmp <- tempfile()
   write.csv2(d, tmp, row.names = FALSE)
@@ -207,6 +238,8 @@ read_hafvog_individuals <- function(xmlfile) {
 #'
 read_hafvog_counts <- function(xmlfile) {
 
+  #print(xmlfile)
+
   x <-
     xml2::read_xml(xmlfile) %>%
     xml2::xml_find_all("SYNI") %>%
@@ -214,13 +247,49 @@ read_hafvog_counts <- function(xmlfile) {
     xml2::xml_find_all('MAELIADGERD')
 
   x <- x[[6]]
-  d <- dplyr::data_frame(rnr = x %>% xml2::xml_find_all(xpath = ".//RADNR") %>% xml2::xml_text() %>% as.integer(),
-                          species = x %>% xml2::xml_children() %>% xml2::xml_find_all(xpath = ".//TEGUND") %>% xml2::xml_text() %>% as.integer(),
-                          nr = x %>% xml2::xml_find_all(xpath = ".//NR") %>% xml2::xml_text() %>% as.integer(),
-                          n = x %>% xml2::xml_find_all(xpath = ".//FJOLDI") %>% xml2::xml_text() %>% as.integer())
+  x1 <-
+    x %>%
+    xml2::xml_children()  %>%
+    xml2::xml_children()  %>%
+    xml2::xml_text()
+  names(x1) <-
+    tolower(x  %>%
+              xml2::xml_children()  %>%
+              xml2::xml_children()  %>%
+              xml2::xml_name())
+  cn <- unique(names(x1))
+
+  x2 <-
+    x %>%
+    xml2::xml_children()  %>%
+    xml2::as_list()
+
+  if(length(x2) > 0) {
+
+  for (k in 1:length(x2)) {
+    cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
+    x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
+    names(x2[[k]]) <- cn
+    #cn <- paste(names(x2[[k]]), collapse = ":")
+    #x2[[k]] <- paste(x2[[k]], collapse = ":")
+    #names(x2[[k]]) <- cn
+  }
+
+  d <- do.call(rbind, lapply(lapply(x2, unlist), "[",
+                             unique(unlist(c(sapply(x2,names))))))
+  d <- as.data.frame(d, stringsAsFactors = FALSE)
+  names(d) <- unique(unlist(c(sapply(x2,names))))
+
+
+  #d <- dplyr::data_frame(rnr = x %>% xml2::xml_find_all(xpath = ".//RADNR") %>% xml2::xml_text() %>% as.integer(),
+  #                        species = x %>% xml2::xml_children() %>% xml2::xml_find_all(xpath = ".//TEGUND") %>% xml2::xml_text() %>% as.integer(),
+  #                        nr = x %>% xml2::xml_find_all(xpath = ".//NR") %>% xml2::xml_text() %>% as.integer(),
+  #                        n = x %>% xml2::xml_find_all(xpath = ".//FJOLDI") %>% xml2::xml_text() %>% as.integer())
   tmp <- tempfile()
   write.csv2(d, tmp, row.names = FALSE)
   d <- read.csv2(tmp, stringsAsFactors = FALSE) %>%
     dplyr::tbl_df()
   return(d)
+  }
+  return(NULL)
 }
