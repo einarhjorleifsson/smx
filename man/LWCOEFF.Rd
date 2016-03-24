@@ -4,20 +4,22 @@
 \name{LWCOEFF}
 \alias{LWCOEFF}
 \title{Length weigth coefficients}
-\format{Each element of the list contains parameter a and b for different
-species. The name of the element of the list corresponds to numerical species
-code.}
+\format{dataframe}
 \source{
-The object is created and maintained by Höskuldur Björnsson. The
+The
 original source is found in "/net/hafkaldi/u2/reikn/Splus5/SMB/.RData". It
 is copied into this library via:
 \code{
-attach('/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')
-save('LWCOEFF',file='data/LWCOEFF.rda')
-detach('file:/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')}
+attach("/net/hafkaldi/u2/reikn/Splus5/SMB/.RData")
+names(LWCOEFF) <- iconv(names(LWCOEFF), "ISO8859-1", "UTF-8")
+attributes(LWCOEFF$"12") <- NULL
+use_data(LWCOEFF)
+}
 }
 \description{
-A \emph{list} that contains length-weight coefficients for number of species.
+A \emph{list} that contains length-weight coefficients
+(a and b) for a number of species. Same data as \link{lwc}, the latter
+being a dataframe.
 }
 \author{
 Hoskuldur Bjornsson

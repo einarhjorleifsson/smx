@@ -37,14 +37,14 @@ read_stations <- function(year = NULL,
 
 #' Title
 #'
-#' @param id
-#' @param species
-#' @param col.names
-#' @param sex
-#' @param mat
-#' @param length
-#' @param corrected
-#' @param oracle
+#' @param id station id
+#' @param species species id
+#' @param col.names column names to return
+#' @param sex include sex
+#' @param mat include maturity
+#' @param length specify length
+#' @param corrected xx
+#' @param oracle xx
 #'
 #' @return A dataframe
 #' @export
@@ -69,16 +69,15 @@ read_lengths <- function(id, species, col.names = c("id","length","n"),
 
 #' Title
 #'
-#' @param id
-#' @param species
-#' @param weight
-#' @param corrected
-#' @param oracle
+#' @param id xxx
+#' @param species xxx
+#' @param weight xxx
+#' @param corrected xxx
+#' @param oracle xxx
 #'
-#' @return
+#' @return A dataframe
 #' @export
 #'
-#' @examples
 read_subsampling <- function(id, species, weight = FALSE,
                              corrected = FALSE,
                              oracle = TRUE) {

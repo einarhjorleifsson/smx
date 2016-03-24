@@ -1,6 +1,6 @@
 Package: smx
 Title: MRI survey functions
-Version: 0.0.0.9000
+Version: 0.0.1.9000
 Authors@R: person("Einar", "Hjorleifsson", email = "einar.hjorleifsson@gmail.com", role = c("aut", "cre"))
 Description: MRI survey functions.
 Depends:

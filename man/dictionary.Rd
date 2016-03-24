@@ -3,9 +3,9 @@
 \docType{data}
 \name{dictionary}
 \alias{dictionary}
-\title{Some title}
+\title{A dictionary of column names}
 \format{dataframe}
 \description{
-Icelandic and english variable names
+Icelandic (fjolst and oracle) and english variable names
 }
 

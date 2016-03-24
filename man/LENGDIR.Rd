@@ -3,18 +3,20 @@
 \docType{data}
 \name{LENGDIR}
 \alias{LENGDIR}
-\title{Some title}
-\format{Some format}
+\title{The length classes by species}
+\format{list}
 \source{
 \code{
-attach('/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')
-save('LENGDIR',file='data/LENGDIR.rda')
-detach('file:/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')}
+attach('~/stasi/Splus5/SMB/.RData')
+use_data(LENGDIR)
+detach('file:~/stasi/Splus5/SMB/.RData')
+}
 }
 \description{
-from SMB RData
+A list whose names corresponds to species.id and whose element
+are the length classes used to compute survey indices.
 }
 \author{
-Some author
+Hoskuldur Bjornsson
 }
 

@@ -3,7 +3,6 @@
 #' @description Calculates abundance and biomass survey indices based on length
 #' classes for a particular species in a given year.
 #'
-#' @export
 #' @param lengths \emph{data.frame} containing length measurement for a given
 #' species in a given survey year.
 #' @param stations \emph{data.frame} containg station survey station informations.
@@ -140,7 +139,6 @@ bioIndex <- function(lengths,stations,sex,lenClass,yr,lwcoeff, ...) {
 #' \item Aggregates the stratified indices in various ways.
 #' }
 #'
-#' @export
 #' @param sfile \emph{data.frame} Station table that contains columns
 #' \code{synis.id} and \code{newstrata} for the \code{z}-file. Note that
 #' the dataframe does not have to include abundance ....
@@ -306,7 +304,6 @@ Calc.index <- function (sfile,
 #'
 #' Function used both in \code{\link{Calc.index}}.
 #'
-#' @export
 #' @aliases index.aggregate.combine
 #' @param result Result
 #' @param index Index

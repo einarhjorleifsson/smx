@@ -8,7 +8,18 @@ read_subsampling(id, species, weight = FALSE, corrected = FALSE,
   oracle = TRUE)
 }
 \arguments{
-\item{oracle}{}
+\item{id}{xxx}
+
+\item{species}{xxx}
+
+\item{weight}{xxx}
+
+\item{corrected}{xxx}
+
+\item{oracle}{xxx}
+}
+\value{
+A dataframe
 }
 \description{
 Title

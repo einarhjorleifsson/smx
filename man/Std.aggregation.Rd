@@ -12,7 +12,7 @@ is copied into this library via:
 \code{
 attach("/net/hafkaldi/u2/reikn/Splus5/SMB/GEOMETRY.NEW/.RData")
 names(Std.aggregation) <- iconv(names(Std.aggregation),'ISO8859-1','UTF-8')
-save(Std.aggregation,file='data/Std.aggregation.rda')
+use(Std.aggregation)
 detach('file:/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')}
 }
 \description{

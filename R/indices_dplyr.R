@@ -36,7 +36,7 @@ calc_by_station <- function(st,
   converter <- 1852   # meters per nautical mile
 
   if(std == "none") {
-    st <- st %>% mutate(towlength = 1)  # makes nonsense but works further down
+    st <- st %>% dplyr::mutate(towlength = 1)  # makes nonsense but works further down
     std.towlength <- 1
     std.towwidth <- 1
     converter <- 1

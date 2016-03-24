@@ -4,12 +4,17 @@
 \alias{tidy_length}
 \title{Title}
 \usage{
-tidy_length(hl, hh, correct.raising = FALSE)
+tidy_length(hl, hh, correct_raising = FALSE)
 }
 \arguments{
 \item{hl}{datras length frequency table}
 
 \item{hh}{datras station table (cleaned)}
+
+\item{correct_raising}{A boolean, if TRUE reconstruct original counts}
+}
+\value{
+A dataframe
 }
 \description{
 Title

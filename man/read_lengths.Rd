@@ -8,7 +8,24 @@ read_lengths(id, species, col.names = c("id", "length", "n"), sex = NULL,
   mat = NULL, length = NULL, corrected = F, oracle = TRUE)
 }
 \arguments{
-\item{oracle}{}
+\item{id}{station id}
+
+\item{species}{species id}
+
+\item{col.names}{column names to return}
+
+\item{sex}{include sex}
+
+\item{mat}{include maturity}
+
+\item{length}{specify length}
+
+\item{corrected}{xx}
+
+\item{oracle}{xx}
+}
+\value{
+A dataframe
 }
 \description{
 Title

@@ -2,15 +2,33 @@
 % Please edit documentation in R/fjolst2.R
 \name{read_stations}
 \alias{read_stations}
-\title{Title}
+\title{Read from table fiskar.stodvar or fjolst::stodvar}
 \usage{
 read_stations(year = NULL, month = NULL, cruise.id = NULL,
   gear.id = NULL, rect = NULL, id = NULL, col.names, oracle = TRUE)
 }
 \arguments{
-\item{oracle}{}
+\item{year}{Years to include}
+
+\item{month}{Months to include}
+
+\item{cruise.id}{Cruises to include}
+
+\item{gear.id}{Gear to include}
+
+\item{rect}{Statistical rectangle to include}
+
+\item{id}{Station id (synis.id) to include}
+
+\item{col.names}{Column names to return}
+
+\item{oracle}{Boolean, if TRUE (default) obtains data from database,
+otherwise from the binary data in fjolst.}
+}
+\value{
+A dataframe
 }
 \description{
-Title
+Read from table fiskar.stodvar or fjolst::stodvar
 }
 

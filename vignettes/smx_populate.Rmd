@@ -1,0 +1,89 @@
+---
+title: "smx data objects"
+author: "Einar Hjörleifsson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sxm_populate}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r knitr_init, echo=FALSE, message = FALSE}
+library(knitr)
+library(dplyr)
+opts_chunk$set(echo=TRUE,
+               eval=FALSE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+```
+
+# Icelandic survey stuff
+
+### Dictionary
+
+```{r}
+dictionary <- 
+  read.csv("inst/csv/dictionary.csv", stringsAsFactors = FALSE) %>% 
+  tbl_df()
+devtools::use_data(dictionary, overwrite = TRUE)
+```
+
+### LENGTHS
+
+```{r, eval=FALSE}
+attach('~/stasi/Splus5/SMB/.RData')
+use_data(LENGDIR)
+detach('file:~/stasi/Splus5/SMB/.RData')
+```
+
+### Length-weight coefficients
+```{r, eval=FALSE}
+attach('~/stasi/Splus5/SMB/.RData')
+names(LWCOEFF) <- iconv(names(LWCOEFF), "ISO8859-1", "UTF-8")
+attributes(LWCOEFF$"12") <- NULL
+use_data(LWCOEFF)
+
+lwc <- plyr::ldply(LWCOEFF)
+names(lwc) <- c("species.id", "a","b")
+lwc <-
+  lwc %>% 
+  tbl_df() %>% 
+  mutate(species.id = as.integer(species.id)) %>% 
+  filter(!is.na(species.id))
+use_data(lwc, overwrite = TRUE)
+detach('file:~/stasi/Splus5/SMB/.RData')
+```
+
+### stratas_new
+
+```{r}
+attach("~/stasi/Splus5/HAUSTRALLNewStrata/Stratifiering/.RData")
+x <- attributes(STRATAS)
+stratas_new <-
+  dplyr::data_frame(newstrata = 1:45,
+                    area = as.numeric(x$area),
+                    rall.area = x$rall.area,
+                    lon = x$pos$lon,
+                    lat = x$pos$lat,
+                    .Names = x$names)
+devtools::use_data(stratas_new)
+```
+
+### stratas_old
+
+```{r}
+attach("~/stasi/Splus5/SMB/GEOMETRY.NEW/.RData")
+x <- attributes(STRATAS)
+stratas_old <- data_frame(oldstrata = as.integer(x$names),
+                                  area = as.numeric(x$area),
+                                  rall.area = x$rall.area,
+                                  lon = x$pos$lon,
+                                  lat = x$pos$lat,
+                                  .Names = as.integer(x$.Names))
+devtools::use_data(stratas_old)
+```

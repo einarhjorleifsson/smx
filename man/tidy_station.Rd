@@ -12,6 +12,9 @@ tidy_station(hh, to.lower = TRUE)
 \item{to.lower}{A boolean, if TRUE (default) then column names are all turned
 to lower.}
 }
+\value{
+A dataframe
+}
 \description{
 Creates a station id
 }

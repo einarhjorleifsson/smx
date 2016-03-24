@@ -6,10 +6,9 @@
 #' @param to.lower A boolean, if TRUE (default) then column names are all turned
 #' to lower.
 #'
-#' @return
+#' @return A dataframe
 #' @export
 #'
-#' @examples
 tidy_station <- function(hh, to.lower = TRUE) {
 
   old.names <- names(hh)
@@ -45,12 +44,12 @@ tidy_station <- function(hh, to.lower = TRUE) {
 #'
 #' @param hl datras length frequency table
 #' @param hh datras station table (cleaned)
+#' @param correct_raising A boolean, if TRUE reconstruct original counts
 #'
-#' @return
+#' @return A dataframe
 #' @export
 #'
-#' @examples
-tidy_length <- function(hl, hh, correct.raising = FALSE) {
+tidy_length <- function(hl, hh, correct_raising = FALSE) {
 
   old.names <- names(hl)
   hl <- setNames(hl, tolower(names(hl)))
@@ -78,14 +77,14 @@ tidy_length <- function(hl, hh, correct.raising = FALSE) {
   #  has been done)
 
   # and then do the raising
-  if(correct.raising) {
+  if(correct_raising) {
     hl <-
       hl %>%
       dplyr::left_join(hh %>% dplyr::select(id, datatype, hauldur), by = "id") %>%
       # Where datatype is C the hlnoatlngt has been standardized to 60 minutes tow time
       # The number of fish in the hl table have also been raised by the raising factor
       # Here the original measurements are "recovered"
-      mutate(hauldur = ifelse(is.na(hauldur),30, hauldur),
+      dplyr::mutate(hauldur = ifelse(is.na(hauldur),30, hauldur),
              n = ifelse(datatype == "C", hlnoatlngt * hauldur/60, hlnoatlngt),
              r = ifelse(is.na(subfactor), 1, subfactor),
              n = n)

@@ -3,18 +3,15 @@
 \docType{data}
 \name{orri_veidarfaeri}
 \alias{orri_veidarfaeri}
-\title{Some title}
-\format{Some format}
+\title{Check if really needed}
+\format{dataframe}
 \source{
-\code{
-attach('/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')
-save('LENGDIR',file='data/LENGDIR.rda')
-detach('file:/net/hafkaldi/u2/reikn/Splus5/SMB/.RData')}
+Oracle database
 }
 \description{
-from SMB RData
+XXX
 }
 \author{
-Some author
+Einar Hjorleifsson
 }
 

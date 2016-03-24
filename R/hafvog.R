@@ -97,7 +97,6 @@ read_hafvog_station <- function(xmlfile) {
 #' @return dataframe
 #' @export
 #'
-#' @examples
 read_hafvog_lengths <- function(xmlfile) {
 
   x <-
