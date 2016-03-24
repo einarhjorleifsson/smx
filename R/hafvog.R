@@ -1,3 +1,24 @@
+# check https://github.com/jennybc/manipulate-xml-with-purrr-dplyr-tidyr
+# https://ryouready.wordpress.com/2009/01/23/r-combining-vectors-or-data-frames-of-unequal-length-into-one-data-frame/
+
+xml_detangler <- function(x) {
+
+  lh2 <- function(x) {
+    cn <- x %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
+    x <- x %>% xml2::xml_children() %>% xml2::xml_text()
+    names(x) <- cn
+    return(x)
+  }
+
+  x <- x %>% lapply(lh2)
+  d <- do.call(rbind, lapply(lapply(x, unlist), "[",
+                             unique(unlist(c(sapply(x,names))))))
+  d <- as.data.frame(d, stringsAsFactors = FALSE) %>% dplyr::tbl_df()
+  names(d) <- unique(unlist(c(sapply(x,names))))
+  return(d)
+}
+
+
 #' Title
 #'
 #' @param xmlfile filename
@@ -16,7 +37,7 @@ read_hafvog <- function(xmlfile) {
 
   for (i in 1:length(xmlfile)) {
 
-    #print(i)
+    #print(paste(i, xmlfile[i]))
 
     st <- read_hafvog_station(xmlfile[i])
     le <- read_hafvog_lengths(xmlfile[i])
@@ -105,44 +126,22 @@ read_hafvog_lengths <- function(xmlfile) {
     xml2::xml_find_all('SKRANING') %>%
     xml2::xml_find_all('MAELIADGERD')
 
-  x2 <-
+  d <-
     x[[1]] %>%
     xml2::xml_children()  %>%
-    xml2::as_list()
-
-  for (k in 1:length(x2)) {
-    cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
-    x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
-    names(x2[[k]]) <- cn
-  }
-
-  d <- do.call(rbind, lapply(lapply(x2, unlist), "[",
-                             unique(unlist(c(sapply(x2,names))))))
-  d <- as.data.frame(d, stringsAsFactors = FALSE)
-  names(d) <- unique(unlist(c(sapply(x2,names))))
+    xml2::as_list() %>%
+    xml_detangler()
 
   # kyngreind lengdarmaeling
-  x2 <-
+  d2 <-
     x[[2]] %>%
     xml2::xml_children()  %>%
-    xml2::as_list()
+    xml2::as_list() %>%
+    xml_detangler
 
-  if(length(x2) > 0) {
-    for (k in 1:length(x2)) {
-      cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
-      x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
-      names(x2[[k]]) <- cn
-    }
+  d <- dplyr::bind_rows(d, d2)
 
-    d2 <- do.call(rbind, lapply(lapply(x2, unlist), "[",
-                               unique(unlist(c(sapply(x2,names))))))
-    d2 <- as.data.frame(d2, stringsAsFactors = FALSE)
-    names(d2) <- unique(unlist(c(sapply(x2,names))))
-
-    d <- dplyr::bind_rows(d, d2)
-  }
-
-
+  if(nrow(d) == 0) return(NULL)
 
   tmp <- tempfile()
   write.csv2(d, tmp, row.names = FALSE)
@@ -167,64 +166,18 @@ read_hafvog_individuals <- function(xmlfile) {
     xml2::xml_find_all('SKRANING') %>%
     xml2::xml_find_all('MAELIADGERD')
 
-  x <- x[[3]]
-
-  # Trial -------------------------------------------------------------------
-  # https://ryouready.wordpress.com/2009/01/23/r-combining-vectors-or-data-frames-of-unequal-length-into-one-data-frame/
-  x1 <-
-    x %>%
+  d <-
+    x[[3]] %>%
     xml2::xml_children()  %>%
-    xml2::xml_children()  %>%
-    xml2::xml_text()
-  names(x1) <-
-    tolower(x  %>%
-              xml2::xml_children()  %>%
-              xml2::xml_children()  %>%
-              xml2::xml_name())
-  cn <- unique(names(x1))
+    xml2::as_list() %>%
+    xml_detangler
 
-  x2 <-
-    x %>%
-    xml2::xml_children()  %>%
-    xml2::as_list()
+  if(nrow(d) == 0) return(NULL)
 
-  for (k in 1:length(x2)) {
-    cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
-    x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
-    names(x2[[k]]) <- cn
-    #cn <- paste(names(x2[[k]]), collapse = ":")
-    #x2[[k]] <- paste(x2[[k]], collapse = ":")
-    #names(x2[[k]]) <- cn
-  }
-
-  d <- do.call(rbind, lapply(lapply(x2, unlist), "[",
-                              unique(unlist(c(sapply(x2,names))))))
-  d <- as.data.frame(d, stringsAsFactors = FALSE)
-  names(d) <- unique(unlist(c(sapply(x2,names))))
-
-  #tmp <- tempfile()
-  #write.csv(d, file=tmp, row.names = F)
-  #d <- read.csv(tmp, stringsAsFactors = FALSE)
-
-  #raw <- matrix(NA,
-  #              nrow = xml2::xml_length(x),
-  #              ncol = length(cn),
-  #              dimnames=list(1:xml2::xml_length(x),cn))
-  #for(j in 1:xml2::xml_length(x)) {
-  #}
-
-
-  #d <- dplyr::data_frame(rnr = x %>% xml2::xml_find_all(xpath = ".//RADNR") %>% xml2::xml_text() %>% as.integer(),
-  #                        species = x %>% xml2::xml_children() %>% xml2::xml_find_all(xpath = ".//TEGUND") %>% xml2::xml_text() %>% as.integer(),
-  #                        nr = x %>% xml2::xml_find_all(xpath = ".//NR") %>% xml2::xml_text() %>% as.integer(),
-  #                        length = x %>% xml2::xml_find_all(xpath = ".//LENGD") %>% xml2::xml_text() %>% as.integer()) %>%
-  #  dplyr::arrange(species, nr, rnr) %>%
-  #  dplyr::mutate(n = 1)
-
-  #tmp <- tempfile()
-  #write.csv2(d, tmp, row.names = FALSE)
-  #d <- read.csv2(tmp, stringsAsFactors = FALSE) %>%
-  #  dplyr::tbl_df()
+  tmp <- tempfile()
+  write.csv2(d, tmp, row.names = FALSE)
+  d <- read.csv2(tmp, stringsAsFactors = FALSE) %>%
+    dplyr::tbl_df()
   return(d)
 }
 
@@ -245,50 +198,18 @@ read_hafvog_counts <- function(xmlfile) {
     xml2::xml_find_all('SKRANING') %>%
     xml2::xml_find_all('MAELIADGERD')
 
-  x <- x[[6]]
-  x1 <-
-    x %>%
+  d <- x[[6]] %>%
     xml2::xml_children()  %>%
-    xml2::xml_children()  %>%
-    xml2::xml_text()
-  names(x1) <-
-    tolower(x  %>%
-              xml2::xml_children()  %>%
-              xml2::xml_children()  %>%
-              xml2::xml_name())
-  cn <- unique(names(x1))
+    xml2::as_list() %>%
+    xml_detangler()
 
-  x2 <-
-    x %>%
-    xml2::xml_children()  %>%
-    xml2::as_list()
+  if(nrow(d) == 0) return(NULL)
 
-  if(length(x2) > 0) {
-
-  for (k in 1:length(x2)) {
-    cn <- x2[[k]] %>% xml2::xml_children() %>% xml2::xml_name() %>% tolower()
-    x2[[k]] <- x2[[k]] %>% xml2::xml_children() %>%  xml2::xml_text()
-    names(x2[[k]]) <- cn
-    #cn <- paste(names(x2[[k]]), collapse = ":")
-    #x2[[k]] <- paste(x2[[k]], collapse = ":")
-    #names(x2[[k]]) <- cn
-  }
-
-  d <- do.call(rbind, lapply(lapply(x2, unlist), "[",
-                             unique(unlist(c(sapply(x2,names))))))
-  d <- as.data.frame(d, stringsAsFactors = FALSE)
-  names(d) <- unique(unlist(c(sapply(x2,names))))
-
-
-  #d <- dplyr::data_frame(rnr = x %>% xml2::xml_find_all(xpath = ".//RADNR") %>% xml2::xml_text() %>% as.integer(),
-  #                        species = x %>% xml2::xml_children() %>% xml2::xml_find_all(xpath = ".//TEGUND") %>% xml2::xml_text() %>% as.integer(),
-  #                        nr = x %>% xml2::xml_find_all(xpath = ".//NR") %>% xml2::xml_text() %>% as.integer(),
-  #                        n = x %>% xml2::xml_find_all(xpath = ".//FJOLDI") %>% xml2::xml_text() %>% as.integer())
   tmp <- tempfile()
   write.csv2(d, tmp, row.names = FALSE)
   d <- read.csv2(tmp, stringsAsFactors = FALSE) %>%
     dplyr::tbl_df()
+
+
   return(d)
-  }
-  return(NULL)
 }
