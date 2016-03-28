@@ -44,7 +44,9 @@ read_hafvog <- function(xmlfile) {
   # ----------------------------------------------------------------------------
   # stack the russian doll
 
+
   for (i in seq_along(xmlfile)) {
+
 
     #print(paste(i, xmlfile[i]))
 
@@ -163,7 +165,6 @@ read_hafvog_lengths <- function(xmlfile) {
   d <- dplyr::bind_rows(d, d2)
 
   if(nrow(d) == 0) return(NULL)
-
 
   tmp <- tempfile()
   write.csv2(d, tmp, row.names = FALSE)
