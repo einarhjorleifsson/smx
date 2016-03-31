@@ -75,10 +75,10 @@ read_hafvog <- function(xmlfile) {
   x <- vector("list", 4)
   names(x) <- c("st","le","ot","ss")
   #x$st <- plyr::ldply(st) %>% tbl_df()
-  x$st <- st %>% purrr::map_df(as_data_frame)
-  x$le <- le %>% purrr::map_df(as.data.frame) %>% tbl_df()
-  x$ot <- ot %>% purrr::map_df(as.data.frame) %>% tbl_df()
-  x$ss <- ss %>% purrr::map_df(as.data.frame) %>% tbl_df()
+  x$st <- st %>% purrr::reduce(dplyr::as_data_frame)
+  x$le <- le %>% purrr::reduce(dplyr::as_data_frame)
+  x$ot <- ot %>% purrr::reduce(dplyr::as_data_frame)
+  x$ss <- ss %>% purrr::reduce(dplyr::as_data_frame)
 
   return(x)
 }
