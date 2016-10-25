@@ -48,14 +48,17 @@ names(LWCOEFF) <- iconv(names(LWCOEFF), "ISO8859-1", "UTF-8")
 attributes(LWCOEFF$"12") <- NULL
 use_data(LWCOEFF)
 
-lwc <- plyr::ldply(LWCOEFF)
-names(lwc) <- c("species.id", "a","b")
-lwc <-
-  lwc %>% 
-  tbl_df() %>% 
-  mutate(species.id = as.integer(species.id)) %>% 
-  filter(!is.na(species.id))
-use_data(lwc, overwrite = TRUE)
+lwc <- 
+  LWCOEFF %>% 
+  dplyr::bind_rows() %>% 
+  tidyr::gather(key = species.id) %>% 
+  dplyr::mutate(variable = rep(c("a","b"),length(LWCOEFF)),
+                species.id = as.integer(species.id)) %>% 
+  dplyr::filter(!is.na(species.id)) %>% 
+  tidyr::spread(key = variable, value = value)
+
+
+devtools::use_data(lwc, overwrite = TRUE)
 detach('file:~/stasi/Splus5/SMB/.RData')
 ```
 

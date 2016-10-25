@@ -10,7 +10,6 @@ Imports:
     gisland,
     lubridate,
     magrittr,
-    plyr,
     purrr,
     stringr,
     xml2
